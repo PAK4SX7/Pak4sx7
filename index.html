@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Banco de la Nación - Baucher</title>
+    <!-- html2canvas para descargar como imagen -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #e5e7eb;
+            font-family: 'Courier New', 'SF Mono', 'Lucida Console', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* ---------- FORMULARIO ---------- */
+        .form-panel {
+            background: white;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .form-panel h2 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: inherit;
+            margin-bottom: 0.2rem;
+            text-align: center;
+        }
+
+        .form-panel .sub {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-bottom: 1.2rem;
+            border-bottom: 1px solid #aaa;
+            display: inline-block;
+            width: auto;
+            padding-bottom: 2px;
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 1.1rem;
+            font-family: monospace;
+            border: 1px solid #888;
+            background: white;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .btn-generate {
+            background: black;
+            border: none;
+            color: white;
+            font-size: 0.9rem;
+            font-family: monospace;
+            font-weight: bold;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-generate:active {
+            background: #333;
+        }
+
+        .info-tip {
+            font-size: 0.6rem;
+            margin-top: 1rem;
+            text-align: center;
+            color: #444;
+        }
+
+        /* ---------- OVERLAY PANTALLA COMPLETA ---------- */
+        .overlay-voucher {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.1s, opacity 0.1s ease;
+            cursor: pointer;
+        }
+
+        .overlay-voucher.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* ---------- MODAL DE CONFIRMACIÓN ---------- */
+        .modal-confirm {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 1.2rem 1.5rem;
+            border: 2px solid #000;
+            border-radius: 4px;
+            z-index: 3000;
+            display: none;
+            text-align: center;
+            font-family: monospace;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .modal-confirm.active {
+            display: block;
+        }
+        .modal-confirm p {
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #000;
+        }
+        .modal-confirm button {
+            background: black;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            font-size: 0.8rem;
+            font-family: monospace;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-confirm button.cancel {
+            background: #666;
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 2500;
+            display: none;
+        }
+        .modal-backdrop.active {
+            display: block;
+        }
+
+        /* ---------- BAUCHER: bloque de texto monoespaciado, sin bordes, izquierda ---------- */
+        .voucher-receipt {
+            background: white;
+            width: 100%;
+            max-width: 540px;
+            padding: 1.5rem 1rem 2rem 1.5rem;
+            font-family: 'Courier New', 'SF Mono', 'Lucida Console', monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            color: black;
+            cursor: default;
+            white-space: normal;
+        }
+
+        /* Encabezado con título y fecha+RP a la derecha */
+        .voucher-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .bank-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .right-header {
+            text-align: right;
+            font-size: 0.7rem;
+            line-height: 1.3;
+            font-weight: 800;
+            padding-top: 5px;
+        }
+        .rp-line {
+            margin-top: 2px;
+        }
+
+        /* El texto principal del baucher (formato respetando saltos de línea) */
+        .voucher-text {
+            white-space: pre-wrap;
+            font-family: inherit;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-panel">
+    <div class="sub">Depósito en efectivo</div>
+    <div class="input-group">
+        <label>AGREGAR EL MONTO (S/.)</label>
+        <input type="number" id="montoInput" step="0.01" placeholder="1165.00" value="1165.00">
+    </div>
+    <button class="btn-generate" id="generarBtn">GENERAR BAUCHER</button>
+    <div class="info-tip">
+        • Toque una vez sobre el baucher para salir<br>
+        • Mantenga presionado 1 segundo para descargar
+    </div>
+</div>
+
+<div id="overlayVoucher" class="overlay-voucher">
+    <div class="voucher-receipt" id="voucherContent">
+        <!-- contenido generado dinámicamente -->
+    </div>
+</div>
+
+<!-- Modal de confirmación para descargar -->
+<div id="modalBackdrop" class="modal-backdrop"></div>
+<div id="modalConfirm" class="modal-confirm">
+    <p>¿Deseas descargar el baucher?</p>
+    <button id="btnConfirmYes">SÍ</button>
+    <button id="btnConfirmNo" class="cancel">NO</button>
+</div>
+
+<script>
+    (function() {
+        const overlay = document.getElementById('overlayVoucher');
+        const voucherContainer = document.getElementById('voucherContent');
+        const montoInput = document.getElementById('montoInput');
+        const generarBtn = document.getElementById('generarBtn');
+        const modalConfirm = document.getElementById('modalConfirm');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const btnConfirmYes = document.getElementById('btnConfirmYes');
+        const btnConfirmNo = document.getElementById('btnConfirmNo');
+
+        let holdTimer = null;
+        let isHoldTriggered = false;
+        let isOverlayActive = false;
+        let pendingDownload = false;
+
+        // ----- Funciones auxiliares -----
+        function getCurrentDateTime() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return {
+                fecha: `${day}/${month}/${year}`,
+                horaCompleta: `${hours}:${minutes}:${seconds}`,
+                horaMin: `${hours}:${minutes}`
+            };
+        }
+
+        function random7digits() {
+            return Math.floor(Math.random() * 9000000 + 1000000).toString();
+        }
+        function random8digits() {
+            return Math.floor(Math.random() * 90000000 + 10000000).toString();
+        }
+        function randomRP() {
+            return Math.floor(Math.random() * 9000000 + 1000000).toString();
+        }
+
+        function formatMonto(amount) {
+            let num = parseFloat(amount);
+            if (isNaN(num)) num = 0;
+            return num.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Genera la línea IMPORTE con asteriscos igual al estilo original (12 asteriscos fijos)
+        function buildImporteLine(rawMonto) {
+            const montoFormateado = formatMonto(rawMonto);
+            // Siempre 12 asteriscos como en el ejemplo
+            const asteriscos = '*'.repeat(12);
+            return `S/${asteriscos}${montoFormateado}`;
+        }
+
+        // Construye el texto completo del baucher respetando exactamente las líneas, solo cambiando datos dinámicos
+        function buildVoucherText(montoNumerico) {
+            const montoValido = isNaN(montoNumerico) ? 0 : montoNumerico;
+            const importeLine = buildImporteLine(montoValido);
+            const datetime = getCurrentDateTime();
+            const fechaStr = datetime.fecha;
+            const horaStr = datetime.horaMin;   // formato HH:MM
+            const horaCompleta = datetime.horaCompleta;
+
+            // Números dinámicos
+            const numeroTransaccion = random7digits();   // similar a 0566527
+            const numeroOperacion = random8digits();     // similar a 59050154
+            const numeroRP = randomRP();                 // para RP: #######
+
+            // Texto exacto según la imagen, con placeholders reemplazados
+            // Se respetan saltos de línea y espacios
+            return `BANCO DE LA NACION
+RUC : 20100030595
+S/A.: 0524 REQUENA
+DEPOS. EN EFECTIVO CTA. AHORROS MN/ME
+
+CUENTA DESTINO : 04-550-545204
+DENOMINACION   : BACILIO CASTILLO WILSON HENRY
+NRO. DOCUMENTO : DNI       000018106841
+
+ORDENANTE      : CHUMBE HUAMANI JHORGE SEBASTIAN
+NRO. DOCUMENTO : 71715274
+
+IMPORTE       ${importeLine}
+
+CONIS.C/CTA   S/            *****0.00
+ITF C/CTA     S/ *****0.05
+
+
+
+EJECUTANTE :
+CHUMBE HUAMANI JHORGE SEBASTIAN
+DNI            : 71715274
+CTA.DOMICILIADA: SAN JUAN BAUTISTA
+0566527   1800    1800    0524    ${horaStr}
+${numeroTransaccion}                                 CLIENTE
+Verifique su dinero antes de retirarse de la ventanilla`;
+        }
+
+        // Construye el HTML completo del baucher (header con fecha/RP + texto plano)
+        function buildVoucherHTML(montoNumerico) {
+            const datetime = getCurrentDateTime();
+            const fechaStr = datetime.fecha;
+            const numeroRP = randomRP();
+            const voucherText = buildVoucherText(montoNumerico);
+            
+            return `
+                <div class="voucher-header">
+                    <div class="bank-title"></div>
+                    <div class="right-header">
+                        <div>${fechaStr}</div>
+                        <div class="rp-line">RP: ${numeroRP}</div>
+                    </div>
+                </div>
+                <div class="voucher-text">${escapeHtml(voucherText)}</div>
+            `;
+        }
+
+        // Pequeña función para escapar HTML y evitar inyección (aunque no hay inputs peligrosos)
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+
+        // Mostrar baucher en overlay
+        function mostrarBaucher(monto) {
+            if (isNaN(monto) || monto === null || monto === '') {
+                alert("Ingrese un monto válido.");
+                return false;
+            }
+            const montoNum = parseFloat(monto);
+            if (montoNum < 0) {
+                alert("El monto no puede ser negativo.");
+                return false;
+            }
+            const html = buildVoucherHTML(montoNum);
+            voucherContainer.innerHTML = html;
+            overlay.classList.add('active');
+            isOverlayActive = true;
+            limpiarTimersYFlags();
+            agregarEventosOverlay();
+            return true;
+        }
+
+        function cerrarOverlay() {
+            if (overlay) {
+                overlay.classList.remove('active');
+                isOverlayActive = false;
+                limpiarTimersYFlags();
+                removerEventosOverlay();
+            }
+        }
+
+        function mostrarModalConfirmacion() {
+            modalConfirm.classList.add('active');
+            modalBackdrop.classList.add('active');
+            pendingDownload = true;
+        }
+
+        function ocultarModalConfirmacion() {
+            modalConfirm.classList.remove('active');
+            modalBackdrop.classList.remove('active');
+            pendingDownload = false;
+        }
+
+        // --- Lógica de toque y presión larga ---
+        let overlayListenersActive = false;
+
+        function limpiarTimersYFlags() {
+            if (holdTimer) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
+            }
+            isHoldTriggered = false;
+        }
+
+        async function descargarBaucher() {
+            if (!isOverlayActive) return;
+
+            const elemento = voucherContainer;
+            if (!elemento) return;
+
+            try {
+                // Aseguramos que no haya scroll en el elemento capturado
+                const canvas = await html2canvas(elemento, {
+                    scale: 2.8,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    useCORS: false
+                });
+                const link = document.createElement('a');
+                const now = new Date();
+                const timestamp = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
+                link.download = `baucher_banco_nacion_${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                console.error(err);
+                alert("Error al generar la imagen. Intente nuevamente.");
+            }
+        }
+
+        function onHoldComplete() {
+            if (!isOverlayActive) return;
+            if (isHoldTriggered) return;
+            isHoldTriggered = true;
+            if (holdTimer) clearTimeout(holdTimer);
+            holdTimer = null;
+            mostrarModalConfirmacion();
+        }
+
+        function onPointerDown(e) {
+            if (!isOverlayActive) return;
+            if (pendingDownload) return; // Evitar múltiples triggers
+            limpiarTimersYFlags();
+            holdTimer = setTimeout(() => {
+                onHoldComplete();
+            }, 1000); // ← 1 segundo para mostrar modal
+        }
+
+        function onPointerUp(e) {
+            if (!isOverlayActive) return;
+            if (isHoldTriggered && !pendingDownload) {
+                limpiarTimersYFlags();
+                return;
+            }
+            if (holdTimer) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
+            }
+            if (!isHoldTriggered && isOverlayActive && !pendingDownload) {
+                cerrarOverlay();
+            }
+            limpiarTimersYFlags();
+        }
+
+        function onPointerCancel(e) {
+            if (!isOverlayActive) return;
+            limpiarTimersYFlags();
+        }
+
+        function onContextMenu(e) {
+            if (isOverlayActive) {
+                e.preventDefault();
+                return false;
+            }
+        }
+
+        function agregarEventosOverlay() {
+            if (overlayListenersActive) return;
+            overlay.addEventListener('mousedown', onPointerDown);
+            overlay.addEventListener('mouseup', onPointerUp);
+            overlay.addEventListener('touchstart', onPointerDown, { passive: false });
+            overlay.addEventListener('touchend', onPointerUp);
+            overlay.addEventListener('touchcancel', onPointerCancel);
+            overlay.addEventListener('contextmenu', onContextMenu);
+            overlayListenersActive = true;
+        }
+
+        function removerEventosOverlay() {
+            if (!overlayListenersActive) return;
+            overlay.removeEventListener('mousedown', onPointerDown);
+            overlay.removeEventListener('mouseup', onPointerUp);
+            overlay.removeEventListener('touchstart', onPointerDown);
+            overlay.removeEventListener('touchend', onPointerUp);
+            overlay.removeEventListener('touchcancel', onPointerCancel);
+            overlay.removeEventListener('contextmenu', onContextMenu);
+            overlayListenersActive = false;
+            limpiarTimersYFlags();
+        }
+
+        // Eventos del modal de confirmación
+        btnConfirmYes.addEventListener('click', function() {
+            ocultarModalConfirmacion();
+            descargarBaucher();
+        });
+
+        btnConfirmNo.addEventListener('click', function() {
+            ocultarModalConfirmacion();
+        });
+
+        modalBackdrop.addEventListener('click', function() {
+            ocultarModalConfirmacion();
+        });
+
+        // Generar desde formulario
+        function generarDesdeFormulario() {
+            let rawMonto = montoInput.value.trim();
+            if (rawMonto === "") {
+                alert("Ingrese un monto.");
+                return;
+            }
+            rawMonto = rawMonto.replace(',', '.');
+            let montoNum = parseFloat(rawMonto);
+            if (isNaN(montoNum)) {
+                alert("Monto inválido. Use números (ejemplo: 1250.00)");
+                return;
+            }
+            if (montoNum < 0) {
+                alert("El monto no puede ser negativo.");
+                return;
+            }
+            if (isOverlayActive) cerrarOverlay();
+            mostrarBaucher(montoNum);
+        }
+
+        generarBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            generarDesdeFormulario();
+        });
+        montoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                generarDesdeFormulario();
+            }
+        });
+
+        cerrarOverlay();
+    })();
+</script>
+</body>
+</html>
