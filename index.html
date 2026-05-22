@@ -1,580 +1,176 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Banco de la Nación - Baucher</title>
-    <!-- html2canvas para descargar como imagen -->
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<meta content="portrait" name="orientation"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="Yape" name="apple-mobile-web-app-title"/>
+<link href="https://i.ibb.co/8D6rbBs1/Icono-de-la-aplicaci-n-Yape.png" rel="apple-touch-icon"/>
+<link href="https://i.ibb.co/8D6rbBs1/Icono-de-la-aplicaci-n-Yape.png" rel="icon" type="image/png"/>
+<link href="https://i.ibb.co/8D6rbBs1/Icono-de-la-aplicaci-n-Yape.png" rel="shortcut icon" type="image/png"/>
+<title>Yape</title>
+<meta content="#660085" name="theme-color"/>
+<link href="data:application/json,{%22name%22:%22Yape%22,%22short_name%22:%22Yape%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23660085%22,%22theme_color%22:%22%23660085%22,%22icons%22:[{%22src%22:%22https://i.ibb.co/8D6rbBs1/Icono-de-la-aplicaci-n-Yape.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22},{%22src%22:%22https://i.ibb.co/8D6rbBs1/Icono-de-la-aplicaci-n-Yape.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}" rel="manifest"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet"/>
 
-        body {
-            background: #e5e7eb;
-            font-family: 'Courier New', 'SF Mono', 'Lucida Console', monospace;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        /* ---------- FORMULARIO ---------- */
-        .form-panel {
-            background: white;
-            padding: 1.5rem;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .form-panel h2 {
-            font-size: 1.2rem;
-            font-weight: bold;
-            font-family: inherit;
-            margin-bottom: 0.2rem;
-            text-align: center;
-        }
-
-        .form-panel .sub {
-            font-size: 0.7rem;
-            text-align: center;
-            margin-bottom: 1.2rem;
-            border-bottom: 1px solid #aaa;
-            display: inline-block;
-            width: auto;
-            padding-bottom: 2px;
-        }
-
-        .input-group {
-            margin: 1rem 0;
-        }
-
-        .input-group label {
-            font-size: 0.75rem;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 8px 10px;
-            font-size: 1.1rem;
-            font-family: monospace;
-            border: 1px solid #888;
-            background: white;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .btn-generate {
-            background: black;
-            border: none;
-            color: white;
-            font-size: 0.9rem;
-            font-family: monospace;
-            font-weight: bold;
-            padding: 10px;
-            width: 100%;
-            cursor: pointer;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-generate:active {
-            background: #333;
-        }
-
-        .info-tip {
-            font-size: 0.6rem;
-            margin-top: 1rem;
-            text-align: center;
-            color: #444;
-        }
-
-        /* ---------- OVERLAY PANTALLA COMPLETA ---------- */
-        .overlay-voucher {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            visibility: hidden;
-            opacity: 0;
-            transition: visibility 0.1s, opacity 0.1s ease;
-            cursor: pointer;
-        }
-
-        .overlay-voucher.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* ---------- MODAL DE CONFIRMACIÓN ---------- */
-        .modal-confirm {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 1.2rem 1.5rem;
-            border: 2px solid #000;
-            border-radius: 4px;
-            z-index: 3000;
-            display: none;
-            text-align: center;
-            font-family: monospace;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .modal-confirm.active {
-            display: block;
-        }
-        .modal-confirm p {
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #000;
-        }
-        .modal-confirm button {
-            background: black;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            margin: 0 5px;
-            font-size: 0.8rem;
-            font-family: monospace;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .modal-confirm button.cancel {
-            background: #666;
-        }
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.4);
-            z-index: 2500;
-            display: none;
-        }
-        .modal-backdrop.active {
-            display: block;
-        }
-
-        /* ---------- BAUCHER: bloque de texto monoespaciado, sin bordes, izquierda ---------- */
-        .voucher-receipt {
-            background: white;
-            width: 100%;
-            max-width: 540px;
-            padding: 1.5rem 1rem 2rem 1.5rem;
-            font-family: 'Courier New', 'SF Mono', 'Lucida Console', monospace;
-            font-size: 0.75rem;
-            line-height: 1.5;
-            color: black;
-            cursor: default;
-            white-space: normal;
-        }
-
-        /* Encabezado con título y fecha+RP a la derecha */
-        .voucher-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 8px;
-        }
-        .bank-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-        .right-header {
-            text-align: right;
-            font-size: 0.7rem;
-            line-height: 1.3;
-            font-weight: 800;
-            padding-top: 5px;
-        }
-        .rp-line {
-            margin-top: 2px;
-        }
-
-        /* El texto principal del baucher (formato respetando saltos de línea) */
-        .voucher-text {
-            white-space: pre-wrap;
-            font-family: inherit;
-            font-size: 0.82rem;
-            line-height: 1.5;
-            font-weight: bold;
-        }
-    </style>
-</head>
+<link href="css/styles.css" rel="stylesheet"/></head>
 <body>
-
-<div class="form-panel">
-    <div class="sub">Depósito en efectivo</div>
-    <div class="input-group">
-        <label>AGREGAR EL MONTO (S/.)</label>
-        <input type="number" id="montoInput" step="0.01" placeholder="1165.00" value="1165.00">
-    </div>
-    <button class="btn-generate" id="generarBtn">GENERAR BAUCHER</button>
-    <div class="info-tip">
-        • Toque una vez sobre el baucher para salir<br>
-        • Mantenga presionado 1 segundo para descargar
-    </div>
+<!-- PASSWORD GATE -->
+<div id="password-gate">
+<div class="gate-logo"><img alt="Yape" src="https://i.ibb.co/8D6rbBs1/Logo-de-Yape.png"/></div>
+<div class="gate-title">Yape</div>
+<div class="gate-subtitle">Ingresa la contraseña<br/>para instalar la aplicación</div>
+<div class="gate-input-wrap">
+<input autocomplete="off" class="gate-input" id="gateInput" maxlength="20" placeholder="Contraseña" type="password"/>
+<button class="gate-eye" id="gateEyeBtn" onclick="toggleGateEye()">👁</button>
 </div>
-
-<div id="overlayVoucher" class="overlay-voucher">
-    <div class="voucher-receipt" id="voucherContent">
-        <!-- contenido generado dinámicamente -->
-    </div>
+<div class="gate-error" id="gateError"></div>
+<button class="gate-btn" id="gateBtn" onclick="verifyGate()">Verificar</button>
 </div>
-
-<!-- Modal de confirmación para descargar -->
-<div id="modalBackdrop" class="modal-backdrop"></div>
-<div id="modalConfirm" class="modal-confirm">
-    <p>¿Deseas descargar el baucher?</p>
-    <button id="btnConfirmYes">SÍ</button>
-    <button id="btnConfirmNo" class="cancel">NO</button>
+<!-- SPLASH -->
+<div id="splash-overlay"><div id="splash-inner"><img alt="Yape iniciando" src="https://i.ibb.co/xq7spTnK/Yape-iniciando-V2.png"/></div></div>
+<!-- LOADING UNIFICADO (usado para carga inicial, otros bancos, yapeo, recarga) -->
+<div class="unified-loading-overlay" id="unifiedLoadingOverlay">
+<div class="unified-loading-box">
+<div class="unified-loading-spinner"></div>
+<div class="unified-loading-label" id="unifiedLoadingLabel">Cargando</div>
 </div>
+</div>
+<!-- BACKDROP DISCLAIMER -->
+<div id="disclaimer-backdrop" onclick="closeDisclaimer()"></div>
+<!-- PANEL DISCLAIMER -->
+<div id="disclaimer-panel">
+<div class="disclaimer-header"><span class="disclaimer-header-title">Aviso Legal</span><button class="disclaimer-close-btn" onclick="closeDisclaimer()">×</button></div>
+<div class="disclaimer-icon-wrap"><div class="disclaimer-icon-circle"><svg viewbox="0 0 24 24"><path d="M12 2L2 7v5c0 5.25 4.3 10.16 10 11.36C17.7 22.16 22 17.25 22 12V7L12 2zm-1 6h2v6h-2V8zm0 8h2v2h-2v-2z"></path></svg></div></div>
+<div class="disclaimer-body"><div class="disclaimer-subtitle">Términos de responsabilidad</div><div class="disclaimer-text"><p>Toda acción realizada mediante esta aplicación será responsabilidad exclusiva del usuario.</p><p>El acceso, uso, distribución o manipulación de la información proporcionada queda bajo criterio y riesgo propio del usuario final.</p><p>El desarrollador no asumirá responsabilidad alguna por usos indebidos, actividades no autorizadas o consecuencias derivadas del uso de esta aplicación.</p><p style="margin-top:20px;padding-top:16px;border-top:1px solid #f0e8f8;font-size:15px;color:#888;line-height:2;"><strong style="color:var(--yape-purple);font-size:16px;">Créditos</strong><br/>Creador: <strong>Pak4sx7</strong><br/>Telegram: <strong>@paka4sx7</strong></p></div></div>
+<div class="disclaimer-footer"><button class="disclaimer-accept-btn" onclick="closeDisclaimer()">Entendido</button></div>
+</div>
+<!-- PANTALLA PRINCIPAL -->
+<div id="screen-main">
+<div class="app-container">
+<div class="header main-section" id="sec-header">
+<button class="header-btn" onclick="openDisclaimer()"><svg viewbox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg></button>
+<div class="search-bar"><svg viewbox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg><span>Buscar en Yape</span></div>
+<button class="header-btn"><svg viewbox="0 0 24 24"><path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z"></path></svg></button>
+<button class="header-btn"><svg viewbox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"></path></svg></button>
+</div>
+<div class="services-grid main-section" id="sec-services">
+<div class="service-item" id="btnRecargarCelular"><div class="service-icon"><img alt="Recargar celular" src="https://i.ibb.co/pr9mvKQf/Icono-recargar-celular.png"/></div><span class="service-label">Recargar<br/>celular</span></div>
+<div class="service-item"><div class="service-icon"><img alt="Yapear servicios" src="https://i.ibb.co/MxtgCzXT/Icono-facil-rapido.png"/></div><span class="service-label">Yapear<br/>servicios</span></div>
+<div class="service-item"><div class="service-icon"><img alt="Promos" src="https://i.ibb.co/BVgywW7n/Icono-promos.png"/></div><span class="service-label">Promos</span></div>
+<div class="service-item"><div class="service-icon"><img alt="Aprobar compras" src="https://i.ibb.co/fYJWtyp2/Icono-aprobar-compras.png"/></div><span class="service-label">Aprobar<br/>compras</span></div>
+<div class="service-item"><div class="service-icon"><img alt="Créditos" src="https://i.ibb.co/RkVhgrmx/Icono-creditos.png"/></div><span class="service-label">Créditos</span></div>
+<div class="service-item"><div class="service-icon"><img alt="Gaming" src="https://i.ibb.co/KzqtXNd7/Icono-gaming.png"/></div><span class="service-label">Gaming</span></div>
+<div class="service-item" style="position:relative;"><div class="badge-ica">Ica</div><div class="service-icon"><img alt="Viajar en bus" src="https://i.ibb.co/2YK1rZyg/Icono-viajes.png"/></div><span class="service-label">Viajar<br/>en bus</span></div>
+<div class="service-item"><div class="service-icon"><img alt="Remesas" src="https://i.ibb.co/wFgwMCr3/Icono-remesas.png"/></div><span class="service-label">Remesas</span></div>
+<div class="service-item"><div class="service-icon"><img alt="SOAT" src="https://i.ibb.co/35GKjgq9/Icono-soat.png"/></div><span class="service-label">SOAT</span></div>
+<div class="service-item"><div class="service-icon"><img alt="Enviar al extranjero" src="https://i.ibb.co/7dHrqy6k/Icono-enviar-al-extrangero.png"/></div><span class="service-label">Enviar al<br/>exterior</span></div>
+<div class="service-item"><div class="service-icon"><img alt="Elecciones Generales" src="https://i.ibb.co/mrgCNPmJ/Icono-elecciones-generales.png"/></div><span class="service-label">Elecciones<br/>Generales</span></div>
+<div class="service-item"><button class="ver-todo-btn"><img alt="Ver todo" src="https://i.ibb.co/fz9RzVrP/Icono-ver-mas.png"/></button><span class="service-label">Ver todo</span></div>
+</div>
+<div class="carousel-container main-section" id="sec-carousel">
+<div class="carousel" id="carousel"><div class="carousel-track" id="carouselTrack"><div class="carousel-card"><img alt="Anuncio 1" src="https://i.ibb.co/LXKWw2bY/Yape-anuncio6.png"/></div><div class="carousel-card"><img alt="Anuncio 2" src="https://i.ibb.co/rGfM0w4Y/Yape-anuncio5.png"/></div><div class="carousel-card"><img alt="Anuncio 3" src="https://i.ibb.co/KcMJ3FKv/Yape-anuncio3.png"/></div><div class="carousel-card"><img alt="Anuncio 4" src="https://i.ibb.co/1tbDP3cD/Yape-anuncio4.png"/></div><div class="carousel-card"><img alt="Anuncio 5" src="https://i.ibb.co/HLD4VHRK/Yape-anuncio2.png"/></div><div class="carousel-card"><img alt="Anuncio 6" src="https://i.ibb.co/kgjvQ6c5/Yape-anuncio1.png"/></div></div></div>
+<div class="carousel-dots"><div class="dot active"><div class="dot-progress"></div></div><div class="dot"><div class="dot-progress"></div></div><div class="dot"><div class="dot-progress"></div></div><div class="dot"><div class="dot-progress"></div></div><div class="dot"><div class="dot-progress"></div></div><div class="dot"><div class="dot-progress"></div></div></div>
+</div>
+<div class="bottom-panel main-section" id="sec-bottom">
+<div class="balance-card">
+<div class="balance-left" onclick="toggleBalanceVisibility()"><div class="balance-icon" id="eyeIconWrapper"><img alt="ojo" class="eye-svg" id="eyeIconImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23742284'%3E%3Cpath d='M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'/%3E%3C/svg%3E"/></div><span class="balance-label" id="balanceLabel">Mostrar saldo</span></div>
+<div class="balance-value hidden" id="balanceValue" onclick="openEditSaldoModal(event)">S/ 0.00</div>
+</div>
+<div class="movements-row" id="movementsToggle"><div class="movements-left"><div class="movements-icon"><img alt="Ver movimientos" src="https://i.ibb.co/bjdR5CNH/Icono-ver-movimientos.png"/></div><span class="movements-text">Mostrar movimientos</span></div><div class="movements-arrow" id="movementsArrow"><svg fill="none" stroke="#742284" stroke-width="2.5" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div>
+<div class="movements-list" id="movementsList"></div>
+<div id="movementsSpacer"></div>
+</div>
+</div>
+</div>
+<!-- BOTONES FIJOS -->
+<div class="action-buttons-fixed" id="actionButtonsFixed">
+<button class="action-btn btn-scan"><svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><rect height="7" rx="1" width="7" x="3" y="3"></rect><rect height="7" rx="1" width="7" x="14" y="3"></rect><rect height="7" rx="1" width="7" x="3" y="14"></rect><rect height="7" rx="1" width="7" x="14" y="14"></rect></svg>Escanear QR</button>
+<button class="action-btn btn-yapear" id="btnYapear"><img src="https://i.ibb.co/k2bkdVdG/Icono-de-Yapear.png" style="width:26px;height:26px;object-fit:contain;flex-shrink:0;"/>Yapear</button>
+</div>
+<!-- Modal saldo -->
+<div class="modal-overlay" id="editSaldoModal"><div class="modal"><div class="modal-title">Editar saldo</div><input class="modal-input" id="saldoInput" min="0" placeholder="0.00" step="0.01" type="number"/><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeEditSaldoModal()">Cancelar</button><button class="modal-btn confirm" onclick="confirmEditSaldo()">Guardar</button></div></div></div>
+<!-- PANTALLA YAPEAR -->
+<div id="screen-yapear">
+<div class="yapear-container">
+<div class="yapear-header"><button class="yapear-icon-btn" id="btnBack">‹</button><div>Yapear a</div><button class="yapear-icon-btn" id="btnClose">×</button></div>
+<div class="recipient-section"><input class="recipient-name" id="recipientName" placeholder="Nombre" type="text"/></div>
+<div class="amount-section"><div class="amount-wrapper"><span class="currency-symbol" id="currencySymbol">S/</span><input class="amount-input" id="amountInput" inputmode="decimal" placeholder="0" type="text"/></div><div class="error-message" id="errorMessage">El monto ingresado no es válido</div></div>
+<div class="input-section"><input class="number-input" id="phoneInput" maxlength="3" placeholder="Agregar número" type="tel"/></div>
+<div class="yapear-footer"><button class="yapear-btn yapear-btn-secondary" id="btnOtrosBancos">Otros bancos</button><button class="yapear-btn yapear-btn-primary" id="btnConfirmYapear">Yapear</button></div>
+</div>
+</div>
+<!-- PANTALLA PLIN -->
+<div id="screen-plin">
+<div class="plin-container">
+<div class="plin-header"><button class="plin-header-btn" id="btnPlinBack">‹</button><div style="color: var(--yape-purple);font-size:15px;">Selecciona una entidad financiera</div><button class="plin-header-btn" id="btnPlinClose">×</button></div>
+<div class="plin-content">
+<button class="plin-option-btn" id="btnPlinOption"><img alt="Plin" src="https://i.ibb.co/HppdCDCh/Logo-de-plin.png"/>Plin</button>
+<button class="plin-option-btn" id="btnYapeOption"><img alt="Yape" src="https://i.ibb.co/8D6rbBs1/Icono-de-la-aplicaci-n-Yape.png"/>Yape</button>
+<button class="plin-option-btn" id="btnBCPOption"><img alt="BCP" src="https://i.ibb.co/v6dYZcHg/Icono-de-BCP.png"/>BCP</button>
+</div>
+</div>
+</div>
+<!-- PANTALLA COMPROBANTE YAPEO -->
+<div id="screen-receipt">
+<img alt="Comprobante" id="receiptImage">
+<canvas id="confettiCanvasYapeo"></canvas>
+<button onclick="hideReceiptScreen()" style="position:absolute;top:0;right:0;width:120px;height:120px;border:none;background:transparent;cursor:pointer;z-index:210;"></button>
+</img></div>
+<!-- Modal confirmación descarga -->
+<div class="download-confirm-overlay" id="downloadConfirmModal"><div class="download-confirm-modal"><div class="download-confirm-title">Descargar comprobante</div><div class="download-confirm-subtitle">¿Deseas descargar el comprobante de la operación?</div><div class="download-confirm-buttons"><button class="download-confirm-btn download-confirm-cancel" onclick="closeDownloadConfirm()">No</button><button class="download-confirm-btn download-confirm-accept" onclick="confirmDownload()">Sí</button></div></div></div>
+<!-- Modal borrar historial -->
+<div class="delete-history-overlay" id="deleteHistoryModal"><div class="delete-history-modal"><div class="delete-history-title">Borrar historial</div><div class="delete-history-subtitle">¿Deseas borrar este historial?</div><div class="delete-history-buttons"><button class="delete-history-btn delete-history-cancel" onclick="closeDeleteHistory()">Cancelar</button><button class="delete-history-btn delete-history-confirm" onclick="confirmDeleteHistory()">Borrar</button></div></div></div>
+<!-- PANTALLA TODOS LOS MOVIMIENTOS -->
+<div id="screen-all-movements"><div class="all-movements-header"><button class="all-movements-back" onclick="closeAllMovements()">‹</button><span>Movimientos</span><div style="width:36px;"></div></div><div class="all-movements-list" id="all-movements-list"></div></div>
+<!-- ═══════════════ PANTALLAS RECARGA ═══════════════ -->
+<div class="recarga-screen" id="recarga-screen1">
+<div class="device-frame">
+<header class="s1-header">
+<button aria-label="Volver" class="back-btn" id="recargaBackBtn1"><div class="back-arrow"></div></button>
+<h1 class="s1-title">Recargar celular</h1>
+<p class="subtitle">Recarga saldo a cualquier línea de celular para estar siempre conectados.</p>
+</header>
+<div class="cards-wrapper">
+<div class="card" id="card-mi-numero" role="button" tabindex="0"><div class="card-icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" viewbox="0 0 24 24"><rect height="20" rx="3" width="12" x="6" y="2"></rect><line x1="12" x2="12" y1="17" y2="17.01"></line></svg></div><div class="card-title">Mi número</div><div class="card-subtitle">*** *** 154</div></div>
+<div class="card" id="card-otra-persona" role="button" tabindex="0"><div class="card-icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" viewbox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><div class="card-title">Otra persona</div><div class="card-subtitle">Contacto o nuevo</div></div>
+</div>
+<section class="content"><h2 class="section-title">Últimos contactos recargados</h2><div class="divider"></div><div class="empty-state"><div class="notebook-icon"><svg fill="none" viewbox="0 0 120 140"><rect fill="#80CBC4" height="14" rx="3" width="10" x="22" y="12"></rect><rect fill="#80CBC4" height="14" rx="3" width="10" x="22" y="38"></rect><rect fill="#80CBC4" height="14" rx="3" width="10" x="22" y="64"></rect><rect fill="#80CBC4" height="14" rx="3" width="10" x="22" y="90"></rect><rect fill="#CE93D8" height="128" rx="10" width="78" x="36" y="6"></rect><rect fill="#E1BEE7" height="116" rx="6" width="66" x="42" y="12"></rect><circle cx="75" cy="48" fill="#8E24AA" r="14"></circle><path d="M58 82 Q75 64 92 82 L92 92 L58 92 Z" fill="#8E24AA"></path><rect fill="#CE93D8" height="5" rx="2.5" width="40" x="55" y="102"></rect><rect fill="#CE93D8" height="5" rx="2.5" width="28" x="55" y="114"></rect></svg></div><p class="empty-text">Aquí verás tus contactos recargados en los últimos 30 días.</p></div></section>
+</div>
+</div>
+<div class="recarga-screen" id="recarga-screen2">
+<div class="app-container">
+<header class="s2-header"><button aria-label="Atrás" class="header-btn" id="s2-back"><svg viewbox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></button><h1 class="header-title">Recargar a</h1><button aria-label="Cerrar" class="header-btn" id="s2-close"><svg viewbox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"></path></svg></button></header>
+<section class="number-section"><div class="number-input-wrapper"><input autocomplete="off" class="number-input" id="phoneInputRecarga" inputmode="numeric" maxlength="11" placeholder="Número" type="tel"/><div class="number-hint">Nuevo número</div></div></section>
+<section class="operator-section"><h2 class="operator-title">Elige la operadora</h2><div class="operator-list">
+<button class="operator-card" disabled="" id="op-entel"><div class="operator-logo"><img alt="Entel" class="icon-sm" src="https://i.ibb.co/HLtDHCXP/Icono-de-Entel.png"/></div><span class="operator-name">Entel</span></button>
+<button class="operator-card" disabled="" id="op-movistar"><div class="operator-logo"><img alt="Movistar" class="icon-sm" src="https://i.ibb.co/67K006QB/Icono-de-Movistar.png"/></div><span class="operator-name">Movistar</span></button>
+<button class="operator-card" disabled="" id="op-claro"><div class="operator-logo"><img alt="Claro" src="https://i.ibb.co/KzGwhpWQ/Icono-de-claro.png"/></div><span class="operator-name">Claro</span></button>
+<button class="operator-card" disabled="" id="op-bitel"><div class="operator-logo"><img alt="Bitel" class="icon-sm" src="https://i.ibb.co/23zNByGG/Icono-de-bitel.png"/></div><span class="operator-name">Bitel</span></button>
+</div></section>
+</div>
+</div>
+<div class="recarga-screen" id="recarga-screen3">
+<div class="app-container">
+<div class="s3-header"><button class="icon-btn" id="s3-back">&lt;</button><div>Recargar a</div><button class="icon-btn" id="s3-close">×</button></div>
+<div class="recipient-section"><div class="number-section"><div class="number-label" id="displayedNumber">Número</div><div class="number-sublabel">Nuevo número</div></div></div>
+<div class="amount-section"><div class="amount-wrapper"><span class="currency-symbol" id="currencySymbolRecarga">S/</span><input class="amount-input" id="amountInputRecarga" inputmode="decimal" placeholder="0" type="text"/></div></div>
+<div class="quick-buttons"><button class="quick-btn" data-value="6">S/6</button><button class="quick-btn" data-value="7">S/7</button><button class="quick-btn" data-value="10">S/10</button></div>
+<div class="footer"><button class="btn btn-primary" disabled="" id="recargarBtn">Recargar</button></div>
+</div>
+</div>
+<!-- SUCCESS SCREEN RECARGA -->
+<div id="recarga-success-screen">
+<canvas id="recargaSuccessCanvas"></canvas>
+<canvas id="recargaConfettiCanvas"></canvas>
+<button onclick="hideRecargaSuccess()" style="position:absolute;top:0;right:0;width:120px;height:120px;border:none;background:transparent;cursor:pointer;z-index:610;"></button>
+</div>
+<!-- Modal descarga recarga -->
+<div class="download-confirm-overlay" id="downloadConfirmRecargaModal"><div class="download-confirm-modal"><div class="download-confirm-title">Descargar comprobante</div><div class="download-confirm-subtitle">¿Deseas descargar el comprobante de recarga?</div><div class="download-confirm-buttons"><button class="download-confirm-btn download-confirm-cancel" onclick="closeDownloadRecargaConfirm()">No</button><button class="download-confirm-btn download-confirm-accept" onclick="confirmDownloadRecarga()">Sí</button></div></div></div>
 
-<script>
-    (function() {
-        const overlay = document.getElementById('overlayVoucher');
-        const voucherContainer = document.getElementById('voucherContent');
-        const montoInput = document.getElementById('montoInput');
-        const generarBtn = document.getElementById('generarBtn');
-        const modalConfirm = document.getElementById('modalConfirm');
-        const modalBackdrop = document.getElementById('modalBackdrop');
-        const btnConfirmYes = document.getElementById('btnConfirmYes');
-        const btnConfirmNo = document.getElementById('btnConfirmNo');
-
-        let holdTimer = null;
-        let isHoldTriggered = false;
-        let isOverlayActive = false;
-        let pendingDownload = false;
-
-        // ----- Funciones auxiliares -----
-        function getCurrentDateTime() {
-            const now = new Date();
-            const day = String(now.getDate()).padStart(2, '0');
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const year = now.getFullYear();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            return {
-                fecha: `${day}/${month}/${year}`,
-                horaCompleta: `${hours}:${minutes}:${seconds}`,
-                horaMin: `${hours}:${minutes}`
-            };
-        }
-
-        function random7digits() {
-            return Math.floor(Math.random() * 9000000 + 1000000).toString();
-        }
-        function random8digits() {
-            return Math.floor(Math.random() * 90000000 + 10000000).toString();
-        }
-        function randomRP() {
-            return Math.floor(Math.random() * 9000000 + 1000000).toString();
-        }
-
-        function formatMonto(amount) {
-            let num = parseFloat(amount);
-            if (isNaN(num)) num = 0;
-            return num.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        // Genera la línea IMPORTE con asteriscos igual al estilo original (12 asteriscos fijos)
-        function buildImporteLine(rawMonto) {
-            const montoFormateado = formatMonto(rawMonto);
-            // Siempre 12 asteriscos como en el ejemplo
-            const asteriscos = '*'.repeat(12);
-            return `S/${asteriscos}${montoFormateado}`;
-        }
-
-        // Construye el texto completo del baucher respetando exactamente las líneas, solo cambiando datos dinámicos
-        function buildVoucherText(montoNumerico) {
-            const montoValido = isNaN(montoNumerico) ? 0 : montoNumerico;
-            const importeLine = buildImporteLine(montoValido);
-            const datetime = getCurrentDateTime();
-            const fechaStr = datetime.fecha;
-            const horaStr = datetime.horaMin;   // formato HH:MM
-            const horaCompleta = datetime.horaCompleta;
-
-            // Números dinámicos
-            const numeroTransaccion = random7digits();   // similar a 0566527
-            const numeroOperacion = random8digits();     // similar a 59050154
-            const numeroRP = randomRP();                 // para RP: #######
-
-            // Texto exacto según la imagen, con placeholders reemplazados
-            // Se respetan saltos de línea y espacios
-            return `BANCO DE LA NACION
-RUC : 20100030595
-S/A.: 0524 REQUENA
-DEPOS. EN EFECTIVO CTA. AHORROS MN/ME
-
-CUENTA DESTINO : 04-550-545204
-DENOMINACION   : BACILIO CASTILLO WILSON HENRY
-NRO. DOCUMENTO : DNI       000018106841
-
-ORDENANTE      : CHUMBE HUAMANI JHORGE SEBASTIAN
-NRO. DOCUMENTO : 71715274
-
-IMPORTE       ${importeLine}
-
-CONIS.C/CTA   S/            *****0.00
-ITF C/CTA     S/ *****0.05
-
-
-
-EJECUTANTE :
-CHUMBE HUAMANI JHORGE SEBASTIAN
-DNI            : 71715274
-CTA.DOMICILIADA: SAN JUAN BAUTISTA
-0566527   1800    1800    0524    ${horaStr}
-${numeroTransaccion}                                 CLIENTE
-Verifique su dinero antes de retirarse de la ventanilla`;
-        }
-
-        // Construye el HTML completo del baucher (header con fecha/RP + texto plano)
-        function buildVoucherHTML(montoNumerico) {
-            const datetime = getCurrentDateTime();
-            const fechaStr = datetime.fecha;
-            const numeroRP = randomRP();
-            const voucherText = buildVoucherText(montoNumerico);
-            
-            return `
-                <div class="voucher-header">
-                    <div class="bank-title"></div>
-                    <div class="right-header">
-                        <div>${fechaStr}</div>
-                        <div class="rp-line">RP: ${numeroRP}</div>
-                    </div>
-                </div>
-                <div class="voucher-text">${escapeHtml(voucherText)}</div>
-            `;
-        }
-
-        // Pequeña función para escapar HTML y evitar inyección (aunque no hay inputs peligrosos)
-        function escapeHtml(str) {
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-                return c;
-            });
-        }
-
-        // Mostrar baucher en overlay
-        function mostrarBaucher(monto) {
-            if (isNaN(monto) || monto === null || monto === '') {
-                alert("Ingrese un monto válido.");
-                return false;
-            }
-            const montoNum = parseFloat(monto);
-            if (montoNum < 0) {
-                alert("El monto no puede ser negativo.");
-                return false;
-            }
-            const html = buildVoucherHTML(montoNum);
-            voucherContainer.innerHTML = html;
-            overlay.classList.add('active');
-            isOverlayActive = true;
-            limpiarTimersYFlags();
-            agregarEventosOverlay();
-            return true;
-        }
-
-        function cerrarOverlay() {
-            if (overlay) {
-                overlay.classList.remove('active');
-                isOverlayActive = false;
-                limpiarTimersYFlags();
-                removerEventosOverlay();
-            }
-        }
-
-        function mostrarModalConfirmacion() {
-            modalConfirm.classList.add('active');
-            modalBackdrop.classList.add('active');
-            pendingDownload = true;
-        }
-
-        function ocultarModalConfirmacion() {
-            modalConfirm.classList.remove('active');
-            modalBackdrop.classList.remove('active');
-            pendingDownload = false;
-        }
-
-        // --- Lógica de toque y presión larga ---
-        let overlayListenersActive = false;
-
-        function limpiarTimersYFlags() {
-            if (holdTimer) {
-                clearTimeout(holdTimer);
-                holdTimer = null;
-            }
-            isHoldTriggered = false;
-        }
-
-        async function descargarBaucher() {
-            if (!isOverlayActive) return;
-
-            const elemento = voucherContainer;
-            if (!elemento) return;
-
-            try {
-                // Aseguramos que no haya scroll en el elemento capturado
-                const canvas = await html2canvas(elemento, {
-                    scale: 2.8,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    useCORS: false
-                });
-                const link = document.createElement('a');
-                const now = new Date();
-                const timestamp = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
-                link.download = `baucher_banco_nacion_${timestamp}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            } catch (err) {
-                console.error(err);
-                alert("Error al generar la imagen. Intente nuevamente.");
-            }
-        }
-
-        function onHoldComplete() {
-            if (!isOverlayActive) return;
-            if (isHoldTriggered) return;
-            isHoldTriggered = true;
-            if (holdTimer) clearTimeout(holdTimer);
-            holdTimer = null;
-            mostrarModalConfirmacion();
-        }
-
-        function onPointerDown(e) {
-            if (!isOverlayActive) return;
-            if (pendingDownload) return; // Evitar múltiples triggers
-            limpiarTimersYFlags();
-            holdTimer = setTimeout(() => {
-                onHoldComplete();
-            }, 1000); // ← 1 segundo para mostrar modal
-        }
-
-        function onPointerUp(e) {
-            if (!isOverlayActive) return;
-            if (isHoldTriggered && !pendingDownload) {
-                limpiarTimersYFlags();
-                return;
-            }
-            if (holdTimer) {
-                clearTimeout(holdTimer);
-                holdTimer = null;
-            }
-            if (!isHoldTriggered && isOverlayActive && !pendingDownload) {
-                cerrarOverlay();
-            }
-            limpiarTimersYFlags();
-        }
-
-        function onPointerCancel(e) {
-            if (!isOverlayActive) return;
-            limpiarTimersYFlags();
-        }
-
-        function onContextMenu(e) {
-            if (isOverlayActive) {
-                e.preventDefault();
-                return false;
-            }
-        }
-
-        function agregarEventosOverlay() {
-            if (overlayListenersActive) return;
-            overlay.addEventListener('mousedown', onPointerDown);
-            overlay.addEventListener('mouseup', onPointerUp);
-            overlay.addEventListener('touchstart', onPointerDown, { passive: false });
-            overlay.addEventListener('touchend', onPointerUp);
-            overlay.addEventListener('touchcancel', onPointerCancel);
-            overlay.addEventListener('contextmenu', onContextMenu);
-            overlayListenersActive = true;
-        }
-
-        function removerEventosOverlay() {
-            if (!overlayListenersActive) return;
-            overlay.removeEventListener('mousedown', onPointerDown);
-            overlay.removeEventListener('mouseup', onPointerUp);
-            overlay.removeEventListener('touchstart', onPointerDown);
-            overlay.removeEventListener('touchend', onPointerUp);
-            overlay.removeEventListener('touchcancel', onPointerCancel);
-            overlay.removeEventListener('contextmenu', onContextMenu);
-            overlayListenersActive = false;
-            limpiarTimersYFlags();
-        }
-
-        // Eventos del modal de confirmación
-        btnConfirmYes.addEventListener('click', function() {
-            ocultarModalConfirmacion();
-            descargarBaucher();
-        });
-
-        btnConfirmNo.addEventListener('click', function() {
-            ocultarModalConfirmacion();
-        });
-
-        modalBackdrop.addEventListener('click', function() {
-            ocultarModalConfirmacion();
-        });
-
-        // Generar desde formulario
-        function generarDesdeFormulario() {
-            let rawMonto = montoInput.value.trim();
-            if (rawMonto === "") {
-                alert("Ingrese un monto.");
-                return;
-            }
-            rawMonto = rawMonto.replace(',', '.');
-            let montoNum = parseFloat(rawMonto);
-            if (isNaN(montoNum)) {
-                alert("Monto inválido. Use números (ejemplo: 1250.00)");
-                return;
-            }
-            if (montoNum < 0) {
-                alert("El monto no puede ser negativo.");
-                return;
-            }
-            if (isOverlayActive) cerrarOverlay();
-            mostrarBaucher(montoNum);
-        }
-
-        generarBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            generarDesdeFormulario();
-        });
-        montoInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                generarDesdeFormulario();
-            }
-        });
-
-        cerrarOverlay();
-    })();
-</script>
-</body>
+<script src="js/app.js"></script></body>
 </html>
